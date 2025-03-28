@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ book_title }} - Book Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        body[data-theme="light"] {
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            color: #333;
+        }
+        body[data-theme="dark"] {
+            background: linear-gradient(to right, #2c3e50, #4a69bd);
+            color: #f5f5f5;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        body[data-theme="dark"] .navbar {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .book-card {
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        body[data-theme="dark"] .book-card {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.2);
+        }
+        .book-card img {
+            height: 300px;
+            object-fit: cover;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .btn-success {
+            background: #ff6b6b;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-warning {
+            background: #f1c40f;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: #3498db;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-info {
+            background: #17a2b8;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .like-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+        .like-btn.liked {
+            color: #ff0000;
+        }
+        body[data-theme="dark"] .list-group-item {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f5f5f5;
+            border-color: #666;
+        }
+        body[data-theme="dark"] .form-control {
+            background: #444;
+            color: #f5f5f5;
+            border-color: #666;
+        }
+        .progress {
+            height: 20px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="https://play-lh.googleusercontent.com/UIog-2XC9YzsMLLnBybXDs5AnvIv9aSzJb8-sKce6xMQR27YFPdtUxtM80gNnX5svxA" alt="icon" height="50">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/recommend">Recommend</a></li>
+                <li class="nav-item"><a class="nav-link" href="/trending">Trending</a></li>
+                <li class="nav-item"><a class="nav-link" href="/favorites">Favorites</a></li>
+                <li class="nav-item"><a class="nav-link" href="/reading_list">Reading List</a></li>
+                <li class="nav-item"><a class="nav-link" href="/notifications">Notifications</a></li>
+                <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout ({{ session['user'] }})</a></li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="btn btn-link nav-link">🌙 Dark Mode</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2 class="mb-3">{{ book_title }}</h2>
+
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <div class="book-card">
+                <img src="{{ image_url }}" class="img-fluid" alt="Book Cover">
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="book-card p-4">
+                <h4><strong>Author:</strong> {{ author }}</h4>
+                <p><strong>Year:</strong> {{ year }}</p>
+                <p><strong>Publisher:</strong> {{ publisher }}</p>
+                <p><strong>Category:</strong> {{ category }}</p>
+                <p><strong>Availability:</strong> {{ status }}</p>
+                <p><strong>Average Rating:</strong> ⭐ {{ avg_rating }} / 5</p>
+                <p><strong>Total Votes:</strong> {{ total_votes }}</p>
+                <p><strong>Total Pages:</strong> {{ total_pages }}</p>
+
+                <!-- Availability Subscription -->
+                {% if status == 'Out of Stock' %}
+                <form id="subscribeAvailabilityForm" class="d-inline">
+                    <input type="hidden" name="book_title" value="{{ book_title }}">
+                    <button type="submit" class="btn btn-info ms-2">Notify Me When Available</button>
+                </form>
+                {% endif %}
+
+                <!-- Add to Favorites Form -->
+                <form action="{{ url_for('add_favorite') }}" method="post" class="d-inline">
+                    <input type="hidden" name="book_id" value="{{ book_id }}">
+                    <input type="hidden" name="book_title" value="{{ book_title }}">
+                    <input type="hidden" name="author" value="{{ author }}">
+                    <input type="hidden" name="image_url" value="{{ image_url }}">
+                    <button type="submit" class="btn btn-success">❤️ Add to Favorites</button>
+                </form>
+
+                <!-- Rate Book -->
+                <a href="{{ url_for('rate_book', book_id=book_title) }}" class="btn btn-warning ms-2">⭐ Rate This Book</a>
+
+                <!-- Reading List Section -->
+                <div class="mt-3">
+                    <h5>Add to Reading List</h5>
+                    <form id="readingListForm" class="d-inline">
+                        <input type="hidden" name="book_title" value="{{ book_title }}">
+                        <select name="status" class="form-select d-inline w-auto">
+                            <option value="To Read" {% if reading_status.status == 'To Read' %}selected{% endif %}>To Read</option>
+                            <option value="Currently Reading" {% if reading_status.status == 'Currently Reading' %}selected{% endif %}>Currently Reading</option>
+                            <option value="Read" {% if reading_status.status == 'Read' %}selected{% endif %}>Read</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary ms-2">Add/Update</button>
+                    </form>
+                </div>
+
+                <!-- Reading Progress Tracker -->
+                {% if reading_status.status %}
+                <div class="mt-3">
+                    <h5>Reading Progress</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ reading_status.progress_percentage }}%" aria-valuenow="{{ reading_status.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ reading_status.progress_percentage | round(1) }}%
+                        </div>
+                    </div>
+                    <form id="readingProgressForm" class="mt-2">
+                        <input type="hidden" name="book_title" value="{{ book_title }}">
+                        <input type="hidden" name="total_pages" value="{{ total_pages }}">
+                        <div class="input-group">
+                            <input type="number" name="current_page" class="form-control" value="{{ reading_status.current_page }}" min="0" max="{{ total_pages }}" placeholder="Current Page">
+                            <button type="submit" class="btn btn-primary">Update Progress</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Social Sharing -->
+                <div class="mt-3">
+                    <h5>Share This Book</h5>
+                    <a href="https://twitter.com/intent/tweet?text=I'm reading {{ book_title }} by {{ author }}! Check it out on this awesome book recommender!&url={{ url_for('view_book', book_title=book_title, _external=True) }}" target="_blank" class="btn btn-sm btn-info me-2">Tweet</a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('view_book', book_title=book_title, _external=True) }}" target="_blank" class="btn btn-sm btn-primary">Share on Facebook</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Section -->
+    <div class="mt-5">
+        <h3>Reviews</h3>
+        <form id="reviewForm" class="mb-4">
+            <input type="hidden" name="book_id" value="{{ book_id }}">
+            <div class="mb-3">
+                <textarea class="form-control" name="review" rows="3" placeholder="Write your review here..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+
+        <div id="reviewsList" class="list-group">
+            {% for review in reviews %}
+            <div class="list-group-item">
+                <p><strong>{{ review[1] }}</strong> <small class="text-muted">{{ review[3] }}</small></p>
+                <p>{{ review[2] }}</p>
+                <button class="like-btn {% if review[5] %}liked{% endif %}" data-review-id="{{ review[0] }}">❤️</button>
+                <span>{{ review[4] }} Likes</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-4">Back to Home</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Submit Review
+        $('#reviewForm').submit(function (event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+            $.post('{{ url_for("add_review") }}', formData, function (response) {
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    alert(response.message);
+                    const reviewHtml = `
+                        <div class="list-group-item">
+                            <p><strong>{{ session['user'] }}</strong> <small class="text-muted">Just now</small></p>
+                            <p>${$('#reviewForm textarea').val()}</p>
+                            <button class="like-btn" data-review-id="${response.review_id}">❤️</button>
+                            <span>0 Likes</span>
+                        </div>`;
+                    $('#reviewsList').prepend(reviewHtml);
+                    $('#reviewForm')[0].reset();
+                }
+            });
+        });
+
+        // Like/Unlike Review
+        $(document).on('click', '.like-btn', function () {
+            const reviewId = $(this).data('review-id');
+            const $button = $(this);
+            const $likesSpan = $button.next('span');
+            let likes = parseInt($likesSpan.text().split(' ')[0]);
+
+            $.post(`/like_review/${reviewId}`, {}, function (response) {
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    if (response.liked) {
+                        $button.addClass('liked');
+                        $likesSpan.text(`${likes + 1} Likes`);
+                    } else {
+                        $button.removeClass('liked');
+                        $likesSpan.text(`${likes - 1} Likes`);
+                    }
+                }
+            });
+        });
+
+        // Add to Reading List
+        $('#readingListForm').submit(function (event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+            $.post('{{ url_for("add_to_reading_list") }}', formData, function (response) {
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    alert(response.message);
+                    location.reload(); // Reload to show reading progress section if newly added
+                }
+            });
+        });
+
+        // Update Reading Progress
+        $('#readingProgressForm').submit(function (event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+            $.post('{{ url_for("update_reading_progress") }}', formData, function (response) {
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    alert(response.message);
+                    const progressPercentage = response.progress_percentage;
+                    $('.progress-bar').css('width', `${progressPercentage}%`).text(`${progressPercentage.toFixed(1)}%`);
+                    $('.progress-bar').attr('aria-valuenow', progressPercentage);
+                }
+            });
+        });
+
+        // Subscribe to Availability Alerts
+        $('#subscribeAvailabilityForm').submit(function (event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+            $.post('{{ url_for("subscribe_availability") }}', formData, function (response) {
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    alert(response.message);
+                    $('#subscribeAvailabilityForm').html('<span class="text-success">You will be notified when this book is available.</span>');
+                }
+            });
+        });
+    });
+
+    // Dark Mode Toggle
+    document.addEventListener('DOMContentLoaded', function () {
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Load saved theme from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+
+        // Toggle theme on button click
+        themeToggle.addEventListener('click', function () {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="sampledjango.users.models.*" />
+          <option value="sampledjango.polls.models.Sddetails.is_valid" />
+          <option value="astro.views" />
+          <option value="neural_network.train_neural_network" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

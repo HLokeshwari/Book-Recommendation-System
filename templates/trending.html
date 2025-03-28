@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Books</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; color: #212529; transition: background 0.3s ease, color 0.3s ease; }
+        .card { transition: transform 0.3s ease-in-out; }
+        .card:hover { transform: scale(1.05); }
+        .card img { height: 200px; object-fit: cover; }
+
+        /* 🌙 Dark Mode Styles */
+        .dark-mode { background-color: #121212; color: #f8f9fa; }
+        .dark-mode .navbar { background-color: #1e1e1e; }
+        .dark-mode .card { background-color: #1e1e1e; color: #f8f9fa; }
+        .dark-mode .btn-dark { background-color: #f8f9fa; color: black; }
+
+
+        /* Dark Mode Toggle Button */
+        #darkModeToggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            border-radius: 50px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a href="/" class="navbar-brand">📚 BookHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/recommend">Recommend</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/trending">Trending</a></li>
+                <li class="nav-item"><a class="nav-link" href="/favorites">Favorites</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🔥 Trending Books</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for book, author, image, votes, rating in books[:20] %}
+        <div class="col">
+            <div class="card shadow-sm">
+                <img src="{{ image }}" class="card-img-top" alt="Book Image">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ book }}</h5>
+                    <p class="card-text">by <strong>{{ author }}</strong></p>
+                    <p class="text-muted">⭐ {{ rating }} ({{ votes }} votes)</p>
+                    <button class="btn btn-info btn-sm" onclick="showDetails('{{ book }}', '{{ author }}', '{{ image }}', '{{ rating }}', '{{ votes }}')">📖 View Details</button>
+                    <button cltrass="btn btn-warning btn-sm" onclick="addToFavorites('{{ book }}', '{{ author }}', '{{ image }}')">❤️ Add to Favorites</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Book Details Modal -->
+<div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Book Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid mb-2">
+                <h4 id="modalTitle"></h4>
+                <p id="modalAuthor"></p>
+                <p><strong>⭐ Rating:</strong> <span id="modalRating"></span></p>
+                <p><strong>📊 Votes:</strong> <span id="modalVotes"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showDetails(title, author, image, rating, votes) {
+    document.getElementById('modalImage').src = image;
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalAuthor').innerText = 'by ' + author;
+    document.getElementById('modalRating').innerText = rating;
+    document.getElementById('modalVotes').innerText = votes;
+    new bootstrap.Modal(document.getElementById('bookModal')).show();
+}
+
+function addToFavorites(bookTitle, author, imageUrl) {
+    fetch('/add_favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'book_title=' + encodeURIComponent(bookTitle) +
+              '&author=' + encodeURIComponent(author) +
+              '&image_url=' + encodeURIComponent(imageUrl)
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error:', error));
+}
+</script>
+
+<!-- 🔹 Dark Mode Toggle Button -->
+<button id="darkModeToggle" class="btn btn-dark">🌙 Dark Mode</button>
+
+<!-- 🔹 JavaScript for Dark Mode -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const darkModeToggle = document.getElementById("darkModeToggle");
+        const body = document.body;
+
+        // Check if dark mode was previously enabled
+        if (localStorage.getItem("darkMode") === "enabled") {
+            body.classList.add("dark-mode");
+            darkModeToggle.innerText = "☀️ Light Mode";
+        }
+
+        // Toggle dark mode on button click
+        darkModeToggle.addEventListener("click", function () {
+            body.classList.toggle("dark-mode");
+
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("darkMode", "enabled");
+                darkModeToggle.innerText = "☀️ Light Mode";
+            } else {
+                localStorage.setItem("darkMode", "disabled");
+                darkModeToggle.innerText = "🌙 Dark Mode";
+            }
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
